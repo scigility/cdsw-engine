@@ -7,10 +7,14 @@ Build cmds:
 ```
 IMAGE=cdsw-engine-cuda
 DOCKER_REPO="scigility/${IMAGE}"
-TAG=14-cml-2021.05-1-cuda
+#DOCKER_REPO="scigilityacademy/${IMAGE}"
 
-docker build --network host -t ${IMAGE}:$TAG -f ${IMAGE}.Dockerfile
+# load the TAG variable from the file
+source VERSION
 
+# Important to set the format docker option, when using "podman" (on Fedora for ex)
+#docker build --network host -t ${IMAGE}:$TAG -f ${IMAGE}.Dockerfile
+docker build --format docker --network host -t ${IMAGE}:$TAG -f ${IMAGE}.Dockerfile
 ```
 
 ## deploy to dockerhub
@@ -22,8 +26,6 @@ docker login docker.io
 
 Deploy cmds:
 ```
-#docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
-
 docker tag ${IMAGE}:$TAG  ${DOCKER_REPO}:$TAG
 docker push ${DOCKER_REPO}:$TAG
 ```
