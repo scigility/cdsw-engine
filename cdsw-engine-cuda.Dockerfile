@@ -14,9 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   rm -rf /var/lib/apt/lists/*
 
 # Versions available as of 2021-07-19: 11.0.221, 11.3.109
-ENV CUDA_VERSION_MINOR=11.0
-#ENV CUDA_VERSION ${CUDA_VERSION_MINOR}.221
-ENV CUDA_PKG_VERSION_MINOR 11-0
+ENV CUDA_VERSION_MINOR=11.3
+#ENV CUDA_VERSION ${CUDA_VERSION_MINOR}.109
+ENV CUDA_PKG_VERSION_MINOR 11-3
 ENV CUDA_PKG_VERSION ${CUDA_PKG_VERSION_MINOR}=${CUDA_VERSION}-1
 
 LABEL com.nvidia.cuda.version="${CUDA_VERSION}"
