@@ -14,7 +14,26 @@ source VERSION
 
 # Important to set the format docker option, when using "podman" (on Fedora for ex)
 #docker build --network host -t ${IMAGE}:$TAG -f ${IMAGE}.Dockerfile
-docker build --format docker --network host -t ${IMAGE}:$TAG -f ${IMAGE}.Dockerfile
+#docker build --format docker --network host -t ${IMAGE}:$TAG -f ${IMAGE}.Dockerfile
+```
+
+### Build for different CUDA Version
+
+Override the CUDA Version to use using the configurable "build-args":
+```
+
+# Versions available as of 2021-07-19: 11.0.221, 11.3.109
+CUDA_V_MAJOR=11
+CUDA_V_MINOR=3
+CUDA_V_PATCH=109
+TAG=13-cuda${CUDA_V_MAJOR}.${CUDA_V_MINOR}-2021.07.22-b2
+
+docker build --format docker --network host \
+ -t ${IMAGE}:$TAG \
+ --build-arg CUDA_V_MAJOR=${CUDA_V_MAJOR} \
+ --build-arg CUDA_V_MINOR=${CUDA_V_MINOR}  \
+ --build-arg CUDA_V_PATCH=${CUDA_V_PATCH} \
+ -f ${IMAGE}.Dockerfile
 ```
 
 ## deploy to dockerhub
