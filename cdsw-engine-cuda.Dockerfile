@@ -1,7 +1,9 @@
 # Dockerfile to build a CUDA-capable CDSW(legacy) engine image
 # originally based on: https://docs.cloudera.com/machine-learning/cloud/gpu/topics/ml-custom-cuda-engine.html
-
-#FROM docker.repository.cloudera.com/cloudera/cdsw/engine:14-cml-2021.05-1
+# TODO use in build >b2
+#ARG IMAGE_NAME=docker.repository.cloudera.com/cdsw/engine
+#ARG IMAGE_TAG=13
+#FROM ${IMAGE_NAME}:${IMAGE_TAG}
 FROM docker.repository.cloudera.com/cdsw/engine:13
 
 RUN rm -f /etc/apt/sources.list.d/*
@@ -14,10 +16,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   rm -rf /var/lib/apt/lists/*
 
 # Versions available as of 2021-07-19: 11.0.221, 11.3.109
-ENV CUDA_VERSION_MINOR=11.3
-#ENV CUDA_VERSION ${CUDA_VERSION_MINOR}.109
-ENV CUDA_PKG_VERSION_MINOR 11-3
-ENV CUDA_PKG_VERSION ${CUDA_PKG_VERSION_MINOR}=${CUDA_VERSION}-1
+ARG CUDA_V_MAJOR=11
+ARG CUDA_V_MINOR=0
+ARG CUDA_V_PATCH=221
+
+ENV CUDA_VERSION_MINOR     ${CUDA_V_MAJOR}.${CUDA_V_MINOR}
+ENV CUDA_VERSION           ${CUDA_V_MAJOR}.${CUDA_V_MINOR}.${CUDA_V_PATCH}
+ENV CUDA_PKG_VERSION_MINOR ${CUDA_V_MAJOR}-${CUDA_V_MINOR}
+#ENV CUDA_PKG_VERSION ${CUDA_PKG_VERSION_MINOR}=${CUDA_VERSION}-1
 
 LABEL com.nvidia.cuda.version="${CUDA_VERSION}"
 
