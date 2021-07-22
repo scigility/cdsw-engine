@@ -1,10 +1,10 @@
 # Dockerfile to build a CUDA-capable CDSW(legacy) engine image
 # originally based on: https://docs.cloudera.com/machine-learning/cloud/gpu/topics/ml-custom-cuda-engine.html
 # TODO use in build >b2
-#ARG IMAGE_NAME=docker.repository.cloudera.com/cdsw/engine
-#ARG IMAGE_TAG=13
-#FROM ${IMAGE_NAME}:${IMAGE_TAG}
-FROM docker.repository.cloudera.com/cdsw/engine:13
+ARG IMAGE_NAME=docker.repository.cloudera.com/cdsw/engine
+ARG IMAGE_TAG=13
+FROM ${IMAGE_NAME}:${IMAGE_TAG}
+#FROM docker.repository.cloudera.com/cdsw/engine:13
 
 RUN rm -f /etc/apt/sources.list.d/*
 RUN apt-get update && apt-get install -y --no-install-recommends \
