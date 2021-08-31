@@ -1,4 +1,7 @@
+[![docker pulls](https://img.shields.io/docker/pulls/scigility/cdsw-engine-cuda.svg)](https://hub.docker.com/r/scigility/cdsw-engine-cuda/) [![docker stars](https://img.shields.io/docker/stars/scigility/cdsw-engine-cuda.svg)](https://hub.docker.com/r/scigility/cdsw-engine-cuda/)
+
 # cdsw-engine
+
 Custom builds based on Cloudera's CDSW engine docker images
 
 ## build
