@@ -54,3 +54,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libcudnn${CUDNN_VERSION_MAJOR}=$CUDNN_VERSION-1+cuda${CUDNN_CUDA_VERSION} && \
   apt-mark hold libcudnn${CUDNN_VERSION_MAJOR} && \
   rm -rf /var/lib/apt/lists/*
+
+# 2021-10-26: Add python-3.8 via ppa repo
+# inspired from https://stackoverflow.com/questions/68843848/installing-python-3-9-on-cloudera-cdsw-without-sudo
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  software-properties-common  && \
+  add-apt-repository ppa:deadsnakes/ppa  && \
+  apt install -y  python3.8  python3-pip  && \
+  rm -rf /var/lib/apt/lists/*  
+#   && rm /etc/apt/sources.list.d/*
