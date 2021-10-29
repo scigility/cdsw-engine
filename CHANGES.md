@@ -1,3 +1,5 @@
+## 2021-10-29
+* Tag 14-cuda11.0-py386-2021.10.29-b1: installing python 3.8.6 from source (inspired from official docker repo)
 ## 2021-10-26
 * Tag 14-cuda11.0-py38-2021.10.26-b1: adding python 3.8.12 (latest) via well-known community "ppa" repo
 

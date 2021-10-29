@@ -57,9 +57,107 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # 2021-10-26: Add python-3.8 via ppa repo
 # inspired from https://stackoverflow.com/questions/68843848/installing-python-3-9-on-cloudera-cdsw-without-sudo
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#  software-properties-common  && \
+#  add-apt-repository ppa:deadsnakes/ppa  && \
+#  apt install -y  python3.8  python3-pip  && \
+#  rm -rf /var/lib/apt/lists/*  
+
+# 2021-10-29: adding python from source from *official docker image*:
+# Ref: https://github.com/docker-library/python/blob/master/3.8/buster/Dockerfile
+# 3.8.6: https://github.com/docker-library/python/blob/5590cdd4367f088277bb5494d0a0b0f65e9ab491/3.8/buster/Dockerfile
+# ensure local python is preferred over distribution python
+## Changes vs the original:
+# I replaced the gpg keyserver by hkp://keyserver.ubuntu.com:80
+ENV PATH /usr/local/bin:$PATH
+
+# http://bugs.python.org/issue19846
+# > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
+ENV LANG C.UTF-8
+
+# extra dependencies (over what buildpack-deps already includes)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  software-properties-common  && \
-  add-apt-repository ppa:deadsnakes/ppa  && \
-  apt install -y  python3.8  python3-pip  && \
-  rm -rf /var/lib/apt/lists/*  
-#   && rm /etc/apt/sources.list.d/*
+		libbluetooth-dev \
+		tk-dev \
+		uuid-dev \
+	&& rm -rf /var/lib/apt/lists/*
+
+ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
+ENV PYTHON_VERSION 3.8.6
+
+RUN set -ex \
+	\
+	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
+	&& wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
+	&& export GNUPGHOME="$(mktemp -d)" \
+	&& gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$GPG_KEY" \
+	&& gpg --batch --verify python.tar.xz.asc python.tar.xz \
+	&& { command -v gpgconf > /dev/null && gpgconf --kill all || :; } \
+	&& rm -rf "$GNUPGHOME" python.tar.xz.asc \
+	&& mkdir -p /usr/src/python \
+	&& tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+	&& rm python.tar.xz \
+	\
+	&& cd /usr/src/python \
+	&& gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+	&& ./configure \
+		--build="$gnuArch" \
+		--enable-loadable-sqlite-extensions \
+		--enable-optimizations \
+		--enable-option-checking=fatal \
+		--enable-shared \
+		--with-system-expat \
+		--with-system-ffi \
+		--without-ensurepip \
+	&& make -j "$(nproc)" \
+	&& make install \
+	&& rm -rf /usr/src/python \
+	\
+	&& find /usr/local -depth \
+		\( \
+			\( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+			-o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+			-o \( -type f -a -name 'wininst-*.exe' \) \
+		\) -exec rm -rf '{}' + \
+	\
+	&& ldconfig \
+	\
+	&& python3 --version
+
+# make some useful symlinks that are expected to exist
+# Customizations (LH) We do not want override the default python2 links
+# RUN cd /usr/local/bin \
+# 	&& ln -sf idle3 idle \
+# 	&& ln -sf pydoc3 pydoc \
+# 	&& ln -sf python3 python \
+# 	&& ln -sf python3-config python-config
+
+# if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
+#ENV PYTHON_PIP_VERSION 20.3.3
+# Customizations (LH): upgrade to later pip
+ENV PYTHON_PIP_VERSION 21.3.1
+# https://github.com/pypa/get-pip
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/5f38681f7f5872e4032860b54e9cc11cf0374932/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 6a0b13826862f33c13b614a921d36253bfa1ae779c5fbf569876f3585057e9d2
+
+# Customizations (LH): s/python/python3/ ; s/pip/pip3/
+RUN set -ex; \
+	\
+	wget -O get-pip.py "$PYTHON_GET_PIP_URL"; \
+	echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum --check --strict -; \
+	\
+	python3 get-pip.py \
+		--disable-pip-version-check \
+		--no-cache-dir \
+		"pip==$PYTHON_PIP_VERSION" \
+	; \
+	pip3 --version; \
+	\
+	find /usr/local -depth \
+		\( \
+			\( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+			-o \
+			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+		\) -exec rm -rf '{}' +; \
+	rm -f get-pip.py
+
