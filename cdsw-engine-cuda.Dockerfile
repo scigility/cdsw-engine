@@ -66,10 +66,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 2021-10-29: adding python from source from *official docker image*:
 # Ref: https://github.com/docker-library/python/blob/master/3.8/buster/Dockerfile
 # 3.8.6: https://github.com/docker-library/python/blob/5590cdd4367f088277bb5494d0a0b0f65e9ab491/3.8/buster/Dockerfile
+# .. and other changes from latest 3.8.12 branch.
 # ensure local python is preferred over distribution python
-## Changes vs the original:
-# I replaced the gpg keyserver by hkp://keyserver.ubuntu.com:80
-ENV PATH /usr/local/bin:$PATH
+# Following PATH extension was already done in the base image!  
+#ENV PATH /usr/local/bin:$PATH
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
@@ -124,6 +124,7 @@ RUN set -ex \
 	\
 	&& python3 --version
 
+
 # make some useful symlinks that are expected to exist
 # Customizations (LH) We do not want override the default python2 links
 # RUN cd /usr/local/bin \
@@ -134,11 +135,13 @@ RUN set -ex \
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
 #ENV PYTHON_PIP_VERSION 20.3.3
-# Customizations (LH): upgrade to later pip
-ENV PYTHON_PIP_VERSION 21.3.1
+# Customizations (LH): upgrade to latest pip found in the reference Dockerfile used for py 3.8.12
+ENV PYTHON_PIP_VERSION 21.2.4
+# https://github.com/docker-library/python/issues/365
+ENV PYTHON_SETUPTOOLS_VERSION 57.5.0
 # https://github.com/pypa/get-pip
-ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/5f38681f7f5872e4032860b54e9cc11cf0374932/get-pip.py
-ENV PYTHON_GET_PIP_SHA256 6a0b13826862f33c13b614a921d36253bfa1ae779c5fbf569876f3585057e9d2
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/3cb8888cc2869620f57d5d2da64da38f516078c7/public/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 c518250e91a70d7b20cceb15272209a4ded2a0c263ae5776f129e0d9b5674309
 
 # Customizations (LH): s/python/python3/ ; s/pip/pip3/
 RUN set -ex; \
@@ -150,6 +153,7 @@ RUN set -ex; \
 		--disable-pip-version-check \
 		--no-cache-dir \
 		"pip==$PYTHON_PIP_VERSION" \
+		"setuptools==$PYTHON_SETUPTOOLS_VERSION" \
 	; \
 	pip3 --version; \
 	\
