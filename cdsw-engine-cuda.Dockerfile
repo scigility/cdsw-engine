@@ -165,3 +165,24 @@ RUN set -ex; \
 		\) -exec rm -rf '{}' +; \
 	rm -f get-pip.py
 
+ENV PIPARGS "--no-cache-dir"
+
+#RUN PIPARGS="--no-cache-dir" /bin/sh -c \
+RUN pip3 install  $PIPARGS \
+    cython==0.29.13 \
+    ipython==5.1.0 \
+    requests==2.22.0 \
+    simplejson==3.16.0 \
+    numpy==1.17.2 \
+    pandas==0.25.1 \
+    pandas-datareader==0.8.1 \
+    py4j==0.10.8.1 \
+    matplotlib==3.1.2 \
+    seaborn==0.9.0 \
+    && echo "TODO install kudu-python==1.2.0"
+    #&& pip3 install $PIPARGS kudu-python==1.2.0
+RUN pip3 install $PIPARGS jupyter==1.0.0 && \
+  pip3 install $PIPARGS prompt-toolkit==1.0.15
+
+# TODO DSS-775 for Nordin:
+# root@1fc47e8bbf24:/usr/local/bin# pip3 install requests-kerberos==0.12.0
