@@ -166,23 +166,29 @@ RUN set -ex; \
 	rm -f get-pip.py
 
 ENV PIPARGS "--no-cache-dir"
-
-#RUN PIPARGS="--no-cache-dir" /bin/sh -c \
-RUN pip3 install  $PIPARGS \
-    cython==0.29.13 \
-    ipython==5.1.0 \
-    requests==2.22.0 \
-    simplejson==3.16.0 \
-    numpy==1.17.2 \
-    pandas==0.25.1 \
-    pandas-datareader==0.8.1 \
+# Installing all modules from "pip36_requirements" below in one go failed with multiple modules, unless we installed part of them separately:
+#RUN pip3.6 freeze > pip36_requirements.txt && pip3 install -r pip36_requirements.txt
+# Finally, instead of trying to mirror the whole python-3.6 Env (which failed anyway due to proprietary modules like "cdsw")
+# ..better idea to re-run the pip3 install cmds inferred from the Cloudera Base image analysis (see the README_cdsw_base.image).
+# Below modules versions were updated to reflect the modules versions included in the python 3.8.6 client bundle (from the customer):
+RUN pip3 install $PIPARGS \
+    Cython==0.29.14 \
+    pandas==1.1.3 \
+    pandas-datareader==0.9.0 \
+    requests==2.24.0 \
+    numpy==1.19.2 \
+    ipython==7.18.1 \
+    simplejson==3.17.2 \
     py4j==0.10.8.1 \
-    matplotlib==3.1.2 \
-    seaborn==0.9.0 \
-    && echo "TODO install kudu-python==1.2.0"
-    #&& pip3 install $PIPARGS kudu-python==1.2.0
-RUN pip3 install $PIPARGS jupyter==1.0.0 && \
-  pip3 install $PIPARGS prompt-toolkit==1.0.15
+    matplotlib==3.3.2 \
+    seaborn==0.11.0 \
+  && pip3 install $PIPARGS kudu-python==1.2.0
 
-# TODO DSS-775 for Nordin:
-# root@1fc47e8bbf24:/usr/local/bin# pip3 install requests-kerberos==0.12.0
+# TODO test in CDSW if that Jupyter install works? I expect not, as long as that proprietary "cdsw" module is missing.. (maybe try to copy from py3.6)
+# TODO Ask Cloudera why they pinned prompt-toolkit==1.0.15. Try if newer (3.0.21) works, that got installed as a dependency earlier
+RUN pip3 install $PIPARGS jupyter==1.0.0 
+#  && pip3 install $PIPARGS prompt-toolkit==1.0.15
+
+# DSS-775: include requests-kerberos module:
+RUN pip3 install $PIPARGS \
+    requests-kerberos==0.12.0
